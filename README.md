@@ -15,7 +15,7 @@ Ratings
 2.	Our marketing team has called upon focus groups to compare the products. These customer ratings Ratings [from 0 to 100 with 0 as worst and 100 as best] are provided for 50 consumers that evaluated both products.
 names(Ratings)
 
-[1] "Rater"          "TOI.Ratings"    "CRU.Ratings"    "Stacked.Rating"
+[1] "Rater"          "TOI.Ratings"    "CRU.Ratings"    "Stacked.Rating"  
 [5] "Stacked.Vendor" "Stacked.Rater"
 
 Financials
