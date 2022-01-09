@@ -1,18 +1,3 @@
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(dplyr)
-library(skimr)
-library(ggplot2)
-library(patchwork)
-library(tidyr)
-library(gt)
-library(broom)
-library(magrittr)
-load("ChooseYourOwnVendor2021.RData")
-```
-
 # Un-Named Grocer's (UNG) Problem
 
 The UNG food division has a problem and you have previously recommended a course of action for solving the problem.  Their original problem was to compare a Chicken Kiev and Chicken Marsala because of the supplier disruptions.  Both products were produced by the same vendor and the vendor could no longer fully supply UNG's required quantities for both products.  The vendor can continue to supply one of the two products but a new vendor would be needed if both products were continued.   The company has decided to leave Chicken Kiev with the existing vendor and to seek out a new vendor for Chicken Marsala.  Your task is to help them choose a vendor among CRU **Chicken R Us** and TOI **Taste of Italy**; two vendors that UNG has worked with in the past.   Variables with names starting with **Stacked**  indicate stacked/tidy versions.
