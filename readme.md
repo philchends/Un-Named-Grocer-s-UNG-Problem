@@ -1,0 +1,451 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(skimr)
+library(ggplot2)
+library(patchwork)
+library(tidyr)
+library(gt)
+library(broom)
+library(magrittr)
+load("ChooseYourOwnVendor2021.RData")
+```
+
+# Un-Named Grocer's (UNG) Problem
+
+The UNG food division has a problem and you have previously recommended a course of action for solving the problem.  Their original problem was to compare a Chicken Kiev and Chicken Marsala because of the supplier disruptions.  Both products were produced by the same vendor and the vendor could no longer fully supply UNG's required quantities for both products.  The vendor can continue to supply one of the two products but a new vendor would be needed if both products were continued.   The company has decided to leave Chicken Kiev with the existing vendor and to seek out a new vendor for Chicken Marsala.  Your task is to help them choose a vendor among CRU **Chicken R Us** and TOI **Taste of Italy**; two vendors that UNG has worked with in the past.   Variables with names starting with **Stacked**  indicate stacked/tidy versions.
+
+The prior recipe has a trademarked sauce that is an ingredient in the current product.  The product must be changed.  
+
+## Ingredients
+
+1. The two vendors have supplied random samples of costs for their own sauce replacements *Sauce.Cost* and some (self-reported) customer purchase intentions (**Buy/NotBuy**) to help us choose.  Customer opinions matter.  These data are supplied in *Ingredients* in both stacked and unstacked form.
+
+```{r}
+names(Ingredients)
+```
+
+## Ratings
+
+2. Our marketing team has called upon focus groups to compare the products.  These customer ratings *Ratings* [from 0 to 100 with 0 as worst and 100 as best] are provided for 50 consumers that evaluated both products.  
+
+```{r}
+names(Ratings)
+```
+
+## Financials
+
+3. Bottom line financials are most important.  The product was not outstanding with the existing supplier.  We expect the performance to be no better with a new vendor and a new recipe, but it is important that we pick the best vendor.  These data are supplied in *Financials*.  The data shows Costs and Boxes for each vendor over the last 52 weeks: *CRU.Costs* and *CRU.Boxes* provide the observations for Chicken R Us.  *TOI.Costs* and *TOI.Boxes* provide the observations for Taste of Italy.
+
+```{r}
+names(Financials)
+```
+
+# Instructions
+
+**Simple computer code and/or output is never an adequate response; responses should be provided and discussed in their appropriate metrics.  Answer the questions clearly interpreting the evidence.  You must do your own work; an honor pledge is provided and required for submission.**
+
+# Ratings
+
+1. Provide some graphic that adequately captures and compares the core elements of the ratings data.  What does it show? 
+```{r}
+Ratings %>%  ggplot() + aes(x=Stacked.Vendor, y=Stacked.Rating, color=Stacked.Vendor) + geom_boxplot() + geom_jitter(alpha=0.5, height = 0) + theme_minimal() + guides(color="none") + labs(x="Vendor", y="Rating")
+```
+
+The graphic shows that TOI has a higher average rating and a small deviation. This may indicate that TOI has a better and more stable performance in rating and CRU.
+
+2. Provide summary statistics for the *Ratings* for each producer.  Compare the means and standard deviations.  What is the interquartile range for each?
+
+```{r}
+skim(Ratings$CRU.Ratings)
+```
+
+The mean of CRU is 74,7 with a standard deviation of 4.60. The interquartile is 5 (p75-p25).
+```{r}
+skim(Ratings$TOI.Ratings)
+```
+The mean of TOI is 76 with a standard deviation of 3.57. The interquartile is 5.8.
+ 
+3. What is the 95% confidence interval for average ratings for each producer?
+```{r}
+t.test(Ratings$CRU.Ratings)
+```
+The 95% confidence interval for average for CRU is between 73.39291 and 76.00709
+
+```{r}
+t.test(Ratings$TOI.Ratings)
+```
+The 95% confidence interval for average for TOI is between  75.02426 and 77.05574
+
+4. Is either product better with 95% confidence?  Which product is better?
+```{r}
+t.test(Ratings$TOI.Ratings,Ratings$CRU.Ratings,paired = TRUE)
+```
+The average rating of TOI is 1.34 higher than that of CRU with a 95% confidence interval between 0.4383426 and 2.2416574. The product of TOI is better than that of CRU.
+
+# Ingredients
+
+## Sauce Cost
+
+1. Provide summary statistics and some combined graphic for the *SauceCost* for each vendor.  Interpret it to compare the two vendors.
+
+```{r}
+Ingredients %>% filter(StackedVendor=="CRU")%>% skim(StackedSauceCost)
+
+```
+CRU has an average sauce cost of \$2.46 with a standard deviation of 0.249.
+
+```{r}
+Ingredients %>% filter(StackedVendor=="TOI")%>% skim(StackedSauceCost)
+```
+TOI has an average sauce cost of \$2.59 with a standard deviation of 0.128.
+
+```{r}
+Ingredients %>% ggplot()+ aes(x=StackedVendor, y= StackedSauceCost, color= StackedVendor)+ geom_violin()+geom_jitter(alpha=0.1, height = 0) + theme_minimal() + guides(color="none") + labs(x="Vendor", y="Sauce Cost")
+```
+
+The graphic shows that CRU has a wider sauce cost interval compared to that of TOI. Despite a maximum cost of $3, most of CRU's cost is between \$2.20 and \$2.62, making it more cost-efficient than TOI. Most of TOI's cost is between \$2.37 and \$2.75.
+
+
+2. Assume that costs are normal with mean and standard deviation exactly as you have calculated above.
+    a. What is the probability of costs below \$2.35 for Curries R Us?
+```{r}
+pnorm(2.35,2.46,0.249)
+```
+  The probability of costs below \$2.35 for CRU is 0.3293289
+    
+   b. What is the probability of costs below \$2.35 for Taste of India?
+```{r}
+pnorm(2.35,2.59,0.128)
+```
+  The probability of costs below \$2.35 for TOI is 0.03039636. A lot lower than that of CRU.
+    
+3. What is a 95% confidence interval for the average *SauceCost* for each vendor?
+```{r}
+t.test(Ingredients$CRUSauceCost)
+```
+The 95% confidence interval for the average sauce cost for CRU is between \$2.402616 and \$2.527072
+
+```{r}
+t.test(Ingredients$TOISauceCost)
+```
+The 95% confidence interval for the average sauce cost for TOI is between \$2.565983 and \$2.622659
+
+4. What is the 95% confidence interval for the difference in average costs?
+```{r}
+t.test(Ingredients$CRUSauceCost,Ingredients$TOISauceCost)
+```
+Comparing CRUSauceCost with TOISauceCost, the 95% confidence interval is \$-0.19751362 to \-$0.06144086.
+
+5. Is either vendor cheaper with 95% confidence?
+
+CRU's sauce cost is cheaper with 95% confidence.
+
+
+## Purchase Intentions
+
+1. What proportion would buy the products of each vendor?
+```{r}
+table(Ingredients$StackedVendor,Ingredients$StackedPurchase)
+prop.test(table(Ingredients$CRUPurchase))
+```
+The proportion of customers purchasing the product of CRU is 0.671875 with a 95 confidence interval from 0.5419976 to 0.7810085
+
+```{r}
+prop.test(table(Ingredients$TOIPurchase))
+```
+The proportion of customers purchasing the product of TOI is 0.5308642 with a 95% confidence interval from 0.4173041 to 0.6414743
+
+2. The surveys were, in each case, sent to 85 individuals.  With 95% confidence, what is the [two-sided] probability of responding to the survey for each product?
+```{r}
+binom.test(64,85, alternative = "two.sided") # CRU
+binom.test(81,85, alternative = "two.sided") # TOI
+```
+
+The probability of responding to the survey for CRU is betwee 0.6474710 and 0.8401019
+
+The probability of responding to the survey for TOI is betwee 0.8838737 and 0.9870311
+
+```{r}
+# Comparison
+prop.test(c(64,81), c(85,85))
+```
+The responding rate is from 0.08609015 to 0.31390985 less for CRU than for TOI. Because the reason why customers were less responsive to the survey for CRU remains unknown, we should be concerned about the difference in response rate. 
+
+3. What is a 95% confidence interval for the probability of Buy for each product?
+```{r}
+prop.test(table(Ingredients$CRUPurchase))
+prop.test(table(Ingredients$TOIPurchase))
+```
+The 95 percent confidence interval for CRU is between 0.5419976 and 0.7810085
+
+The 95 percent confidence interval for TOI is between 0.4173041 and 0.6414743
+
+4. What is a 95% confidence interval for the difference in the probability of Buy?  Does it favor either product with 95% confidence?  If so, which one?
+```{r}
+prop.test(table(Ingredients$StackedVendor,Ingredients$StackedPurchase))
+```
+The 95% confidence interval is between -0.03122668 and 0.31324829. Since the interval includes 0, it means there is no significant difference in the probability of Buy. However, we need to be mindful of CRU's lower response rate that could make survey for CRU less credible.
+
+# Financials
+
+1. Summarize the data for each vendor.  Include a 95% confidence interval for boxes and costs for each vendor and describe these intervals in their relevant metrics.
+```{r}
+skim(Financials)
+```
+```{r}
+t.test(Financials$TOI.Boxes)
+t.test(Financials$TOI.Costs)
+```
+The 95% confidence interval of boxes for TOI is between 23071.67 and 24567.10 boxes
+
+The 95% confidence interval of costs for TOI is between \$71696.23 and \$75961.60
+
+```{r}
+t.test(Financials$CRU.Boxes)
+t.test(Financials$CRU.Costs)
+```
+
+The 95% confidence interval of boxes for CRU is between 24193.91 and 26893.01 boxes
+
+The 95% confidence interval of costs for CRU is between \$61791.21 and \$67925.67
+
+2. Provide a scatterplot of Costs and Boxes for each vendor.
+```{r}
+TOIFinancials <- Financials %>% ggplot() + aes(x=TOI.Boxes, y=TOI.Costs) + geom_point(alpha=0.5) + labs(title="TOI", subtitle="Costs as a function of Boxes")
+
+CRUFinancials <- Financials %>% ggplot() + aes(x=CRU.Boxes, y=CRU.Costs) + geom_point(alpha=0.5) + labs(title="CRU", subtitle="Costs as a function of Boxes")
+
+TOIFinancials + CRUFinancials
+```
+
+3. Provide a regression model for the cost structure of each vendor; costs as a function of boxes.
+    a. Write the relevant equation using the point estimates.
+```{r}
+ModTOI <- lm(TOI.Costs~TOI.Boxes, data = Financials)
+ModTOI
+```
+
+```{r}
+ModCRU <- lm(CRU.Costs~CRU.Boxes, data = Financials)
+ModCRU
+```
+
+  The estimate equations
+      
+  For TOI:
+    TOI.Costs = 10087.589 dollars + 2.676 dollars per box + error
+      
+  For CRU:
+    CRU.Costs = 9213.574 dollars + 2.178 dollars per box + erro
+
+    
+b. What is your best guess of one-number fixed costs [for each vendor]?
+    
+  Estimate fixed costs for TOI is \$10087.589
+
+  Estimate fixed costs for CRU is \$9213.574
+
+c. What is your best guess of one-number variable costs [for each vendor]?
+    
+  Variable costs for TOI is 2.676 dollars per box
+    
+  Variable costs for CRU is 2.178 dollars per box
+    
+  d. Add the regression line to your plot in question 2
+    
+```{r}
+TOIFinancials <- Financials %>% ggplot() + aes(x=TOI.Boxes, y=TOI.Costs) + geom_point(alpha=0.5) + geom_smooth(method="lm")+ labs(title="TOI", subtitle="Costs as a function of Boxes")
+
+CRUFinancials <- Financials %>% ggplot() + aes(x=CRU.Boxes, y=CRU.Costs) + geom_point(alpha=0.5) + geom_smooth(method="lm")+ labs(title="CRU", subtitle="Costs as a function of Boxes")
+
+TOIFinancials + CRUFinancials
+
+```
+    
+4. Estimate each regression model and summarize the relevant regression using `summary()`.
+    a. Are the fixed costs zero with 95% confidence for each vendor?
+```{r}
+summary(ModCRU)
+ModCRU %>% tidy()
+
+```
+ The fixed costs for CRU are unlikely to be zero because The p-value for the intercept is 0.000318
+ 
+```{r}
+summary(ModTOI)
+ModTOI %>% tidy
+```
+ The fixed costs for TOI are unlikely to be zero because The p-value for the intercept is 0.00403
+
+ b.Are the variable costs zero with 95% confidence for each vendor?
+     
+    The variable costs are unlikely to be zero for CRU because p-value is < 2e-16.
+     
+    The variable costs are unlikely to be zero for TOI because p-value is < 2e-16.
+    
+ c.Which vendor experienced the largest cost overrun?
+     
+    The maximum of residuals for CRU.Costs is 7835.6. The maximum of residuals for TOI.Costs is 5096.1. 
+     
+    CRU experienced the largest cost overrun.
+    
+ d.Which vendor experienced the largest cost underrun?
+     
+    The minimum of residuals for CRU.Costs is -6817.8. The minimum of residuals for TOI.Costs is -4246.9.
+     
+    CRU experienced the largest cost underrun.
+    
+5. What is the residual standard error for each vendor?  What does this mean about the predictability of their incurred costs?  In absolute terms, which has more predictable costs? 
+```{r}
+#CRU
+summary(ModCRU)
+
+#TOI
+summary(ModTOI)
+```
+
+CRU has a residual standard error of 3173 on 50 degrees of freedom
+    
+TOI has a residual standard error of 2677 on 50 degrees of freedom
+    
+A smaller residual standard error means that the real value of the data is closer to the predictions of the model.Here, we see that TOI has a smaller standard deviation, which means TOI has more predictable costs.
+
+6. Which of the two regressions has a higher proportion of explained variance?  Provide the relevant statistic for each vendor.  
+```{r}
+# CRU
+ModCRU %>% summary %>% pluck("r.squared")
+
+#TOI
+ModTOI %>% summary %>% pluck("r.squared")
+```
+The value of R-squared for CRU is 0.9187. For TOI, the value of R-squared is 0.8802. CRU has a higher proportion of explained variance.
+
+   a. What value of the F distribution/ratio would show that the proportion of variance explained per degree of freedom in the regression is strictly greater than the variance per degree of freedom in the residual **with 1% probability**?
+```{r}
+qf(0.01,1,50,lower.tail = FALSE)
+```
+The value of F would be 7.170577
+
+7. Are the residuals normal for the regression for each vendor?  Provide at least two pieces of evidence and a definitive statistical answer.
+```{r}
+resid.CRU <- residuals(ModCRU)
+resid.TOI <- residuals(ModTOI)
+
+car::qqPlot(resid.CRU)
+
+source(url("https://raw.githubusercontent.com/robertwwalker/DADMStuff/master/ResidPlotter.R"))
+resid.plotter(ModCRU)
+
+shapiro.test(resid.CRU)
+```
+The graphics show the distribution of CRU's residuals is close to normal distribution. Shapiro.test shows the p-value = 0.9247, which means the residuals are normal.
+
+```{r}
+car::qqPlot(resid.TOI)
+resid.plotter(ModTOI)
+shapiro.test(resid.TOI)
+```
+The graphics show the distribution of TOI's residuals is close to normal distribution. Shapiro.test shows the p-value = 0.09284, which is greater than 0.05 and means the residuals are normal. That said, CRU's residuals are "more normal". 
+
+
+8. In what remains, assume that the residuals you located were normal.
+    a. What is the probability that each vendor's cost are predicted to within $\pm \$5000$?
+```{r}
+# CRU
+pnorm(5000,0,3173)- pnorm(-5000,0,3173)
+
+# TOI
+pnorm(5000,0,2677)- pnorm(-5000,0,2677)
+```
+The probability that CRU's cost are predicted to within $\pm \$5000$ is 0.8849271
+
+The probability that TOI's cost are predicted to within $\pm \$5000$ is 0.9382048
+
+9. Predict the distribution of average and all costs for each vendor were they to produce 20000 units.
+
+Comparing the confidence intervals, the regression model for CRU predicts an average cost of \$51432.5 to \$54132.2 for 20000 units. The regression model for TOI predicts an average cost of \$62303.15 to \$64913.12 for 20000 units. Obviously, the predictions show no overlap for 20000 units. TOI has higher average costs for 20000 units than CRU. 
+
+Prediction intervals show that the regression model for CRU predicts all costs for 20000 units are \$46268.7 to \$59296. The regression model for TOI predicts all costs for 20000 units are \$58074.29 to \$69141.98. There is only slight overlap between CRU and TOI.
+
+```{r}
+# CRU
+NewData <- data.frame(CRU.Boxes= 20000, TOI.Boxes= 20000)
+predict(ModCRU, newdata = NewData, interval = "confidence")
+```
+
+```{r}
+# CRU
+predict(ModCRU, newdata = NewData, interval = "prediction")
+```
+
+
+```{r}
+# TOI
+predict(ModTOI, newdata = NewData, interval = "confidence")
+```
+
+```{r}
+# TOI
+predict(ModTOI, newdata = NewData, interval = "prediction")
+```
+
+10. Provide the 95% confidence intervals for the parameters [slope and intercept].
+
+With the 95% confidence interval, the slope of the regression model for CRU is 1.994365 to 2.362512. The intercept for CRU is 4429.380827 to 13997.767552.
+
+With the 95% confidence interval, the slope of the regression model for TOI is 2.395643 to 2.956411. The intercept for TOI is 3367.505287 to 16807.671984.
+```{r}
+confint(ModCRU, level = 0.95)
+```
+```{r}
+confint(ModTOI, level = 0.95)
+```
+
+11.	Upper management prefers that we choose the vendor with the lowest cost per unit. Which vendor has a lower estimated cost per unit? Is it lower with 95% confidence?
+
+CRU has a lower estimated cost per unit. With 95% confidence level, CRU has the lower cost per unit of \$1.994365. 
+
+
+# Other Concerns
+
+Contamination is always a concern for food vendors.  If contamination levels are too high, the risks are too large and the vendor must be disqualified.  **In this case, concerns arise if the relevant probabilities are less than 0.05**.  Outside information about salmonella and Listeria monocytogenes should have no bearing on your decision, only the probabilities.
+
+1. For Chicken R Us, salmonella has been a recurring issue.  If industry wide, salmonella outbreaks happen at a rate of 1.6 per year, what is the probability of the 4 [or more] outbreaks experienced by Chicken R Us?
+
+```{r}
+ppois(3,1.6, lower.tail = FALSE)
+```
+The probability of of the 4 or more outbreaks experienced by CRU is 0.07881349, which is slightly greater than 0.05. Not the best performance but there should be no concerns about CRU's contamination levels.
+
+2. For Taste of Italy, Listeria monocytogenes has been a recurring issue.  If industry wide, Listeria monocytogenes happen at a rate of 3 per year, what is the probability of the 5 [or more] outbreaks experienced by Taste of Italy?
+
+```{r}
+ppois(4,3, lower.tail = FALSE)
+```
+The probability of of the 5 or more outbreaks experienced by TOI is 0.1847368, which is greater than 0.05.There should be no concerns about TOI's contamination levels.
+
+
+# The Choice and the Evidence
+
+1. What vendor do you choose and why?  Describe each of your findings and how they influence your recommendation.
+
+**Rating**
+The mean of rating for CRU is 74,7 with a standard deviation of 4.60 while that for TOI is 76 with a standard deviation of 3.57.The average rating of TOI is 1.34 higher than that of CRU with a 95% confidence interval between 0.4383426 and 2.2416574. The product of TOI is better than that of CRU. **[TOI > CRU]**
+
+**Ingredient**
+  **Sauce**
+    Most of CRU's cost for sauce is between \$2.20 and \$2.62, making it more cost-efficient than TOI. Most of TOI's cost for     sauce is between \$2.37 and \$2.75. CRU is cheaper with 95% confidence. **[CRU > TOI]**
+  
+  **Purchase Intentions**
+    The survey shows that 67.19 % of the [self-reported] customers are willing to purchase the product of CRU. 53.09% of the customer are willing to purchase the product of TOI. The 95% confidence interval for the difference is between -0.03122668 and 0.31324829. Since the interval includes 0, there is no significant difference in the probability of           Buy. **[CRU = TOI]**
+    
+  However, the responding rate of the survey for CUR is 0.08609015 to 0.31390985 less than that for TOI. Given that the reason why customers were less responsive to the survey for CRU remains unknown, we should be concerned that the survey may not reflect the real purchase intention for CRU.
+  
+**Financials**
+The regression model for CRU predicts all costs for 20000 units are \$46268.7 to \$59296. The regression model for TOI predicts all costs for 20000 units are \$58074.29 to \$69141.98. With 95% confidence level, CRU has the lowest cost per unit of \$1.994365. **[CRU > TOI]**
+
+**Decision**
+Because there is no significant difference in the probability of purchase intentions and because bottom line financials are most important and the performance of the product is not expected to be better with a new vendor and a new recipe, I tend to choose CRU because of its lower costs. 
