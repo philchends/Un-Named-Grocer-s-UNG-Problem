@@ -284,6 +284,7 @@ ModTOI %>% tidy
     CRU experienced the largest cost underrun.
     
 5. What is the residual standard error for each vendor?  What does this mean about the predictability of their incurred costs?  In absolute terms, which has more predictable costs? 
+
 ```{r}
 #CRU
 summary(ModCRU)
@@ -299,6 +300,7 @@ TOI has a residual standard error of 2677 on 50 degrees of freedom
 A smaller residual standard error means that the real value of the data is closer to the predictions of the model.Here, we see that TOI has a smaller standard deviation, which means TOI has more predictable costs.
 
 6. Which of the two regressions has a higher proportion of explained variance?  Provide the relevant statistic for each vendor.  
+
 ```{r}
 # CRU
 ModCRU %>% summary %>% pluck("r.squared")
